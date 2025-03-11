@@ -13,7 +13,6 @@ import com.uijin.job.model.WantedModel;
 import com.uijin.job.repository.JobRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Connection;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.springframework.http.HttpEntity;
@@ -25,7 +24,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 @RequiredArgsConstructor
-public class findJobCrawling {
+public class FindJobCrawling {
 
   private final Map<String, Long> maxJobIdMap = new HashMap<>();
   private final ObjectMapper objectMapper = new ObjectMapper();
@@ -34,8 +33,8 @@ public class findJobCrawling {
   private final JobRepository jobRepository;
 
   @Transactional
-  @Scheduled(cron = "0/20 * * * * ?")
-  // @Scheduled(initialDelay = 0, fixedDelay = 300000) // 300000ms = 5분
+//  @Scheduled(cron = "0/20 * * * * ?")
+  @Scheduled(initialDelay = 0, fixedDelay = 200000) // 300000ms = 5분
   public void findJobCrawling() throws IOException {
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -58,33 +57,46 @@ public class findJobCrawling {
     List<JobEntity> jobEntityList = new ArrayList<>();
     // 점핏
     for (JumpitModel.Position jumpitJob : jumpitJobs) {
-      if (maxJobIdMap.containsKey("J") && jumpitJob.getId() <= maxJobIdMap.get("J")) {
-        break;
+      if(maxJobIdMap.containsKey("J")) {
+        if(jumpitJob.getId() > maxJobIdMap.get("J")) {
+          maxJobIdMap.put("J", jumpitJob.getId());
+          jobEntityList.add(JobEntity.toEntity(jumpitJob));
+        }
+      } else {
+        maxJobIdMap.put("J", jumpitJob.getId());
+        jobEntityList.add(JobEntity.toEntity(jumpitJob));
       }
-      maxJobIdMap.put("J", jumpitJob.getId());
-      jobEntityList.add(JobEntity.toEntity(jumpitJob));
     }
 
     // 원티드
     for (WantedModel.WantedJob wantedJob : wantedJobs) {
-      if (maxJobIdMap.containsKey("W") && wantedJob.getId() <= maxJobIdMap.get("W")) {
-        break;
+      if(maxJobIdMap.containsKey("W")) {
+        if(wantedJob.getId() > maxJobIdMap.get("W")) {
+          maxJobIdMap.put("W", wantedJob.getId());
+          jobEntityList.add(JobEntity.toEntity(wantedJob));
+        }
+      } else {
+        maxJobIdMap.put("W", wantedJob.getId());
+        jobEntityList.add(JobEntity.toEntity(wantedJob));
       }
-      maxJobIdMap.put("W", wantedJob.getId());
-      jobEntityList.add(JobEntity.toEntity(wantedJob));
     }
 
     // 리멤버
     for (RememberModel.RememberJob rememberJob : rememberJobs) {
-      if (maxJobIdMap.containsKey("R") && rememberJob.getId() <= maxJobIdMap.get("R")) {
-        break;
+      if(maxJobIdMap.containsKey("R")) {
+        if(rememberJob.getId() > maxJobIdMap.get("R")) {
+          maxJobIdMap.put("R", rememberJob.getId());
+          jobEntityList.add(JobEntity.toEntity(rememberJob));
+        }
+      } else {
+        maxJobIdMap.put("R", rememberJob.getId());
+        jobEntityList.add(JobEntity.toEntity(rememberJob));
       }
-      maxJobIdMap.put("R", rememberJob.getId());
-      jobEntityList.add(JobEntity.toEntity(rememberJob));
     }
 
     jobRepository.saveAll(jobEntityList);
   }
+
 
   private Response getCrawlingResponse(String url) throws IOException {
     return Jsoup.connect(url).ignoreContentType(true).execute();

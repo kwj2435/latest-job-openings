@@ -17,7 +17,7 @@ public class WantedModel {
 
   @Getter
   @NoArgsConstructor
-  public static class WantedJob {
+  public static class WantedJob{
     private long id;
     private Company company;
     @JsonProperty("title_img")

@@ -15,7 +15,7 @@ public class RememberModel {
 
   @Getter
   @NoArgsConstructor
-  public static class RememberJob {
+  public static class RememberJob{
     private long id;
     private String title;
     @JsonProperty("thumbnail_url")

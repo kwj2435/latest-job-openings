@@ -27,7 +27,7 @@ public class JumpitModel {
 
   @Getter
   @NoArgsConstructor
-  public static class Position {
+  public static class Position{
     private long id;
     private String jobCategory;
     private String logo;
