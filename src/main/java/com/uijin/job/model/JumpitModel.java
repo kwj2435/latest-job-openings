@@ -39,5 +39,6 @@ public class JumpitModel {
     private int viewCount;
     private boolean newcomer;
     private int minCareer;
+    private List<String> locations;
   }
 }
