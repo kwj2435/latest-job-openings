@@ -10,7 +10,7 @@
         }
 
         .column {
-            width: 32%;
+            width: 25%;
             padding: 10px;
             border: 1px solid #ddd;
         }
@@ -73,6 +73,19 @@
         <h2>리멤버 (Remember)</h2>
         <ul>
             <li th:each="job : ${groupedJobs['R']}" class="job-item">
+                <a th:href="'https://career.rememberapp.co.kr/job/postings/' + ${job.jobId}" target="_blank">
+                    <img th:src="${job.imagePath}" alt="Job Image" width="200" height="200"/>
+                    <p th:text="${job.title}" style="font-weight: bold; font-size: 20px">Job Title</p>
+                    <p th:text="${job.companyName}">Company</p>
+                    <p th:text="${job.location}">Location</p>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="column">
+        <h2>직행 (ZigHang)</h2>
+        <ul>
+            <li th:each="job : ${groupedJobs['Z']}" class="job-item">
                 <a th:href="'https://career.rememberapp.co.kr/job/postings/' + ${job.jobId}" target="_blank">
                     <img th:src="${job.imagePath}" alt="Job Image" width="200" height="200"/>
                     <p th:text="${job.title}" style="font-weight: bold; font-size: 20px">Job Title</p>

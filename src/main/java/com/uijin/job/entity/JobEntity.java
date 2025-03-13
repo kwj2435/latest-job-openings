@@ -3,6 +3,7 @@ package com.uijin.job.entity;
 import com.uijin.job.model.JumpitModel;
 import com.uijin.job.model.RememberModel;
 import com.uijin.job.model.WantedModel;
+import com.uijin.job.model.ZighangModel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -70,6 +71,17 @@ public class JobEntity {
             .title(position.getTitle())
             .companyName(position.getOrganization().getName())
             .location(position.getNormalizedAddress().toString())
+            .build();
+  }
+
+  public static JobEntity toEntity(ZighangModel.RecruitmentSimple position) {
+    return JobEntity.builder()
+            .jobId(position.getId())
+            .domain("Z")
+            .imagePath(position.getMainImageUrl())
+            .title(position.getTitle())
+            .companyName(position.getCompanyName())
+            .location(position.getCompanyAddress())
             .build();
   }
 }

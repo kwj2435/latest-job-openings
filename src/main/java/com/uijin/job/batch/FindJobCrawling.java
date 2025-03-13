@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uijin.job.entity.JobEntity;
 import com.uijin.job.model.JumpitModel;
 import com.uijin.job.model.JumpitModel.JumpitResponse;
+import com.uijin.job.model.ZighangModel;
 import java.io.IOException;
 import java.util.*;
 
@@ -39,20 +40,24 @@ public class FindJobCrawling {
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     Response jumpitData = getCrawlingResponse("https://jumpit-api.saramin.co.kr/api/positions?jobCategory=1&sort=reg_dt&highlight=false");
+    Response zighangData = getCrawlingResponse("https://api.zighang.com/api/recruitment/filter/v4?page=0&size=14&isOpen=true&sortCondition=UPLOAD&orderBy=DESC&companyTypes=&industries=&recruitmentTypeNames=&recruitmentDeadlineType=&educations=&careers=ZERO,ONE,TWO,THREE,FOUR,FIVE,SIX,SEVEN,EIGHT,NINE,TEN,IRRELEVANCE&recruitmentAddress=&recJobMajorCategory=IT%EA%B0%9C%EB%B0%9C_%EB%8D%B0%EC%9D%B4%ED%84%B0&recJobSubCategory=%EB%B0%B1%EC%97%94%EB%93%9C&affiliate=&companyName=&keywords=&uploadStartDate=&uploadEndDate=&workStartDate=&workEndDate=");
     Response wantedData = getCrawlingResponse("https://www.wanted.co.kr/api/chaos/navigation/v1/results?1741609804248=&job_group_id=518&job_ids=660&job_ids=872&country=kr&job_sort=job.latest_order&years=0&years=10&locations=all&limit=20");
     String rememberData = postCrawlingResponse("https://career-api.rememberapp.co.kr/job_postings/search");
 
     JumpitResponse jumpitResponse = objectMapper.readValue(jumpitData.body(), JumpitModel.JumpitResponse.class);
     WantedModel.WantedResponse wantedResponse = objectMapper.readValue(wantedData.body(), WantedModel.WantedResponse.class);
     RememberModel.RememberResponse rememberResponse = objectMapper.readValue(rememberData, RememberModel.RememberResponse.class);
+    ZighangModel.ZighangResponse zighangResponse = objectMapper.readValue(zighangData.body(), ZighangModel.ZighangResponse.class);
 
     List<JumpitModel.Position> jumpitJobs = jumpitResponse.getResult().getPositions();
     List<WantedModel.WantedJob> wantedJobs = wantedResponse.getData();
     List<RememberModel.RememberJob> rememberJobs = rememberResponse.getData();
+    List<ZighangModel.RecruitmentSimple> zigHangJobs = zighangResponse.getRecruitments().getRecruitmentSimpleList();
 
     jumpitJobs.sort(Comparator.comparing(JumpitModel.Position::getId));
     wantedJobs.sort(Comparator.comparing(WantedModel.WantedJob::getId));
     rememberJobs.sort(Comparator.comparing(RememberModel.RememberJob::getId));
+    zigHangJobs.sort(Comparator.comparing(ZighangModel.RecruitmentSimple::getRecruitmentUid));
 
     List<JobEntity> jobEntityList = new ArrayList<>();
     // 점핏
@@ -91,6 +96,19 @@ public class FindJobCrawling {
       } else {
         maxJobIdMap.put("R", rememberJob.getId());
         jobEntityList.add(JobEntity.toEntity(rememberJob));
+      }
+    }
+
+    // 직행
+    for (ZighangModel.RecruitmentSimple zigHangJob : zigHangJobs) {
+      if(maxJobIdMap.containsKey("Z")) {
+        if(zigHangJob.getId() > maxJobIdMap.get("Z")) {
+          maxJobIdMap.put("Z", zigHangJob.getId());
+          jobEntityList.add(JobEntity.toEntity(zigHangJob));
+        }
+      } else {
+        maxJobIdMap.put("Z", zigHangJob.getId());
+        jobEntityList.add(JobEntity.toEntity(zigHangJob));
       }
     }
 
